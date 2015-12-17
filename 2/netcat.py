@@ -50,10 +50,11 @@ def client_sender(target, port, buffer):
                 if recv_len < 4096:
                     break
 
-                buffer = raw_input("")
-                buffer += "\n"
+            print(response)
+            buffer = input("")
+            buffer += "\n"
 
-                client.send(buffer.encode())
+            client.send(buffer.encode())
     except:
         print("[*] Exception Exiging.")
 
