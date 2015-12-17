@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
-
+import sys
 import socket
 
-target_host = "www.google.com"
-target_port = 80
+target_host = sys.argv[1]
+target_port = int(sys.argv[2])
 
 
 def tcp():
