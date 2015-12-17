@@ -45,7 +45,7 @@ def client_sender(target, port, buffer):
             while recv_len:
                 data = client.recv(4096)
                 recv_len = len(data)
-                response += data
+                response += str(data)
 
                 if recv_len < 4096:
                     break
