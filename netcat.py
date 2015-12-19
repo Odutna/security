@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
-import sys
 import argparse
-import socket
+from api import Client
 
 
 def build_parser():
@@ -29,35 +28,34 @@ def build_parser():
     return parser
 
 
-def client_sender(target, port, buffer):
-    # AF_INET: IPv4, SOCK_STREAM: TCP
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
+def client_sender(target, port, message):
+    client = Client(target, port)
     try:
-        client.connect((target, port))
-        if len(buffer):
-            client.send(buffer.encode())
+        client.connect()
+        if len(message):
+            client.send(message.encode('utf-8'))
+        response = client.recv()
+        print(response)
 
-        while True:
-            recv_len = 1
-            response = ""
+        # while True:
+        #     recv_len = 1
+        #     response = ""
 
-            while recv_len:
-                data = client.recv(4096)
-                recv_len = len(data)
-                response += str(data)
+        #     while recv_len:
+        #         data = client.recv(4096)
+        #         recv_len = len(data)
+        #         response += str(data)
 
-                if recv_len < 4096:
-                    break
+        #         if recv_len < 4096:
+        #             break
 
-            print(response)
-            buffer = input("")
-            buffer += "\n"
+        #     print(response)
+        #     buffer = input("")
+        #     buffer += "\n"
 
-            client.send(buffer.encode())
+        #     client.send(buffer.encode())
     except:
         print("[*] Exception Exiging.")
-
         client.close()
 
 
@@ -67,8 +65,8 @@ def main():
 
     if not opt.listen and len(opt.target) and opt.port > 0:
         # send received data to the target
-        buffer = sys.stdin.read()
-        client_sender(opt.target, opt.port, buffer)
+        message = input()
+        client_sender(opt.target, opt.port, message)
 
 
 if __name__ == '__main__':
