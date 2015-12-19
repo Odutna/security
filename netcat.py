@@ -3,6 +3,8 @@ import sys
 import argparse
 from api import Client
 
+ENCODE = 'utf-8'
+
 
 def build_parser():
     parser = argparse.ArgumentParser()
@@ -31,9 +33,9 @@ def build_parser():
 
 def talk(client, target, port, message):
     if len(message):
-        client.send(message.encode('utf-8'))
+        client.send(message.encode(ENCODE))
     response = client.recv()
-    print(response)
+    print(response.decode(ENCODE))
 
 
 def main():
@@ -41,15 +43,20 @@ def main():
     opt = parser.parse_args()
 
     if not opt.listen and len(opt.target) and opt.port > 0:
-        # send received data to the target
+        # send and receive messages with the target
         client = Client(opt.target, opt.port)
         try:
             while True:
+                # save with line feed code
                 message = sys.stdin.read()
                 talk(client, opt.target, opt.port, message)
         except:
             print("[*] Exception Exiging.")
             client.close()
+
+    elif opt.listen:
+        # server_loop()
+        pass
 
 
 if __name__ == '__main__':
