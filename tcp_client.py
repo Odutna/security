@@ -22,7 +22,7 @@ def tcp():
 
 
 def udp():
-    # AF_INET: IPv4, SOCK_DGRAM: TCP
+    # AF_INET: IPv4, SOCK_DGRAM: UDP
     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     client.sendto(b"AAABBBCCC", (target_host, target_port))

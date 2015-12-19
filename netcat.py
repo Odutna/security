@@ -2,7 +2,7 @@
 import sys
 import argparse
 
-from api import Client
+from handler import TCPHandler, UDPHandler
 
 ENCODE = 'utf-8'
 
@@ -16,6 +16,9 @@ def build_parser():
         '-p', '--port', type=int, required=True, help='port'
     )
     parser.add_argument(
+        '-u', '--udp', action='store_true', help='using udp (tcp by default)'
+    )
+    parser.add_argument(
         '-l', '--listen',  help='listen on [host]:[port] for incoming connections'
     )
     parser.add_argument(
@@ -26,14 +29,14 @@ def build_parser():
         '-c', '--command', help='initialize a command shell'
     )
     parser.add_argument(
-        '-u', '--upload', dest='destination',
+        '-U', '--upload', dest='destination',
         help='upon receiving connection upload a file and write to [destination]'
     )
     return parser
 
 
 def talk(client, target, port, message):
-    if len(message):
+    if message:
         client.send(message.encode(ENCODE))
     response = client.recv()
     print(response.decode(ENCODE))
@@ -45,7 +48,10 @@ def main():
 
     if not opt.listen and len(opt.target) and opt.port > 0:
         # send and receive messages with the target
-        client = Client(opt.target, opt.port)
+        if not opt.udp:
+            client = TCPHandler(opt.target, opt.port)
+        else:
+            client = UDPHandler(opt.target, opt.port)
         try:
             while True:
                 # save with line feed code
