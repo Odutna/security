@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import sys
 import argparse
 from api import Client
 
@@ -28,35 +29,11 @@ def build_parser():
     return parser
 
 
-def client_sender(target, port, message):
-    client = Client(target, port)
-    try:
-        client.connect()
-        if len(message):
-            client.send(message.encode('utf-8'))
-        response = client.recv()
-        print(response)
-
-        # while True:
-        #     recv_len = 1
-        #     response = ""
-
-        #     while recv_len:
-        #         data = client.recv(4096)
-        #         recv_len = len(data)
-        #         response += str(data)
-
-        #         if recv_len < 4096:
-        #             break
-
-        #     print(response)
-        #     buffer = input("")
-        #     buffer += "\n"
-
-        #     client.send(buffer.encode())
-    except:
-        print("[*] Exception Exiging.")
-        client.close()
+def talk(client, target, port, message):
+    if len(message):
+        client.send(message.encode('utf-8'))
+    response = client.recv()
+    print(response)
 
 
 def main():
@@ -65,8 +42,14 @@ def main():
 
     if not opt.listen and len(opt.target) and opt.port > 0:
         # send received data to the target
-        message = input()
-        client_sender(opt.target, opt.port, message)
+        client = Client(opt.target, opt.port)
+        try:
+            while True:
+                message = sys.stdin.read()
+                talk(client, opt.target, opt.port, message)
+        except:
+            print("[*] Exception Exiging.")
+            client.close()
 
 
 if __name__ == '__main__':

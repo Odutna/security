@@ -8,9 +8,11 @@ class Client(object):
     def __init__(self, host, port):
         self.host = host
         self.port = port
+        # AF_INET: IPv4, SOCK_STREAM: TCP
         self.handler = socket.socket(
             socket.AF_INET, socket.SOCK_STREAM
         )
+        self.connect()
 
     def connect(self):
         self.handler.connect((self.host, self.port))
