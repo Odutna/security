@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import sys
 import argparse
+
 from api import Client
 
 ENCODE = 'utf-8'
@@ -52,7 +53,6 @@ def main():
                 talk(client, opt.target, opt.port, message)
         except:
             print("[*] Exception Exiging.")
-            client.close()
 
     elif opt.listen:
         # server_loop()

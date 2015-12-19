@@ -14,6 +14,9 @@ class Client(object):
         )
         self.connect()
 
+    def __del__(self):
+        self.handler.close()
+
     def connect(self):
         self.handler.connect((self.host, self.port))
 
