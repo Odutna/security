@@ -49,8 +49,8 @@ def main():
         # send and receive messages with the target
         client = make_client(opt)
         client.talk()
-
     elif opt.listen:
+        # receive messages from clients
         server = ServerHandler(opt.target, opt.port)
         server.listen()
 
