@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+import sys
+import traceback
 import abc
 import socket
 import threading
@@ -21,11 +23,19 @@ class AbstractHandler(metaclass=abc.ABCMeta):
     def recv(self):
         pass
 
-    def talk(self, message):
-        if message:
-            self.send(message.encode(ENCODE))
-        response = self.recv()
-        print(response.decode(ENCODE))
+    def talk(self):
+        try:
+            while True:
+                print("[*] Input: ", end='')
+                sys.stdout.flush()
+                message = sys.stdin.read()
+                if message:
+                    self.send(message.encode(ENCODE))
+                response = self.recv()
+                print(response.decode(ENCODE))
+        except:
+            print("[*] Exception Exiging.")
+            traceback.print_exc(file=sys.stdout)
 
 
 class TCPHandler(AbstractHandler):

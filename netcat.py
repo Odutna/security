@@ -1,6 +1,4 @@
 # -*- coding:utf-8 -*-
-import sys
-import traceback
 import argparse
 
 from handler import TCPHandler, UDPHandler, ServerHandler
@@ -50,16 +48,7 @@ def main():
     if not opt.listen and len(opt.target) and opt.port > 0:
         # send and receive messages with the target
         client = make_client(opt)
-        try:
-            while True:
-                print("[*] Input: ", end='')
-                sys.stdout.flush()
-                # save message with line feed code
-                message = sys.stdin.read()
-                client.talk(message)
-        except:
-            print("[*] Exception Exiging.")
-            traceback.print_exc(file=sys.stdout)
+        client.talk()
 
     elif opt.listen:
         server = ServerHandler(opt.target, opt.port)
