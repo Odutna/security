@@ -3,6 +3,7 @@ import abc
 import socket
 
 MAX_SIZE = 4096
+ENCODE = 'utf-8'
 
 
 class AbstractHandler(metaclass=abc.ABCMeta):
@@ -17,6 +18,12 @@ class AbstractHandler(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def recv(self):
         pass
+
+    def talk(self, message):
+        if message:
+            self.send(message.encode(ENCODE))
+        response = self.recv()
+        print(response.decode(ENCODE))
 
 
 class TCPHandler(AbstractHandler):

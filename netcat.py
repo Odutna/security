@@ -1,10 +1,9 @@
 # -*- coding:utf-8 -*-
 import sys
+import traceback
 import argparse
 
 from handler import TCPHandler, UDPHandler
-
-ENCODE = 'utf-8'
 
 
 def build_parser():
@@ -35,11 +34,12 @@ def build_parser():
     return parser
 
 
-def talk(client, target, port, message):
-    if message:
-        client.send(message.encode(ENCODE))
-    response = client.recv()
-    print(response.decode(ENCODE))
+def make_client(opt):
+    if not opt.udp:
+        client = TCPHandler(opt.target, opt.port)
+    else:
+        client = UDPHandler(opt.target, opt.port)
+    return client
 
 
 def main():
@@ -48,17 +48,17 @@ def main():
 
     if not opt.listen and len(opt.target) and opt.port > 0:
         # send and receive messages with the target
-        if not opt.udp:
-            client = TCPHandler(opt.target, opt.port)
-        else:
-            client = UDPHandler(opt.target, opt.port)
+        client = make_client(opt)
         try:
             while True:
-                # save with line feed code
+                print("[*] Input: ", end='')
+                sys.stdout.flush()
+                # save message with line feed code
                 message = sys.stdin.read()
-                talk(client, opt.target, opt.port, message)
+                client.talk(message)
         except:
             print("[*] Exception Exiging.")
+            traceback.print_exc(file=sys.stdout)
 
     elif opt.listen:
         # server_loop()
