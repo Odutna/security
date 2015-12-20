@@ -3,7 +3,7 @@ import sys
 import traceback
 import argparse
 
-from handler import TCPHandler, UDPHandler
+from handler import TCPHandler, UDPHandler, ServerHandler
 
 
 def build_parser():
@@ -18,7 +18,8 @@ def build_parser():
         '-u', '--udp', action='store_true', help='using udp (tcp by default)'
     )
     parser.add_argument(
-        '-l', '--listen',  help='listen on [host]:[port] for incoming connections'
+        '-l', '--listen', action='store_true',
+        help='listen on [host]:[port] for incoming connections'
     )
     parser.add_argument(
         '-e', '--execute', dest='file_to_run',
@@ -61,8 +62,8 @@ def main():
             traceback.print_exc(file=sys.stdout)
 
     elif opt.listen:
-        # server_loop()
-        pass
+        server = ServerHandler(opt.target, opt.port)
+        server.listen()
 
 
 if __name__ == '__main__':

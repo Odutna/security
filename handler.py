@@ -1,8 +1,10 @@
 # -*- coding:utf-8 -*-
 import abc
 import socket
+import threading
 
 MAX_SIZE = 4096
+MAX_CONNECTION = 5
 ENCODE = 'utf-8'
 
 
@@ -33,13 +35,10 @@ class TCPHandler(AbstractHandler):
         self.handler = socket.socket(
             socket.AF_INET, socket.SOCK_STREAM
         )
-        self.connect()
+        self.handler.connect((host, port))
 
     def __del__(self):
         self.handler.close()
-
-    def connect(self):
-        self.handler.connect((self.host, self.port))
 
     def send(self, message):
         self.handler.send(message)
@@ -66,3 +65,32 @@ class UDPHandler(AbstractHandler):
     def recv(self):
         data, addr = self.handler.recvfrom(MAX_SIZE)
         return data
+
+
+class ServerHandler(object):
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+        # AF_INET: IPv4, SOCK_STREAM: TCP
+        self.handler = socket.socket(
+            socket.AF_INET, socket.SOCK_STREAM
+        )
+        self.handler.bind((host, port))
+
+    def listen(self):
+        self.handler.listen(MAX_CONNECTION)
+        print("[*] Listening on {}:{}".format(self.host, self.port))
+        self.accept()
+
+    def accept(self):
+        while True:
+            client, addr = self.handler.accept()
+            print("[*] Accepted connection from: {}:{}".format(addr[0], addr[1]))
+            client_handler = threading.Thread(target=self.handle_client, args=(client,))
+            client_handler.start()
+
+    def handle_client(self, client_socket):
+        request = client_socket.recv(MAX_SIZE)
+        print("[*] Received {}".format(request.decode(ENCODE)))
+        client_socket.send(b"ACK!")
+        client_socket.close()
