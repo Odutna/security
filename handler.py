@@ -9,6 +9,7 @@ import subprocess
 MAX_SIZE = 4096
 MAX_CONNECTION = 5
 ENCODE = 'utf-8'
+PROMPT = b'<BHP:#> '
 
 
 class AbstractHandler(metaclass=abc.ABCMeta):
@@ -32,13 +33,11 @@ class AbstractHandler(metaclass=abc.ABCMeta):
             if len(response) < MAX_SIZE:
                 return data + response.decode(ENCODE)
             else:
-                data += response
+                data += response.decode(ENCODE)
 
-    def talk(self):
+    def chat(self):
         try:
             while True:
-                print("[*] Input: ", end='')
-                sys.stdout.flush()
                 message = sys.stdin.read()
                 if message:
                     self.send(message.encode(ENCODE))
@@ -107,20 +106,22 @@ class ServerHandler(object):
         while True:
             client, addr = self.handler.accept()
             print("[*] Accepted connection from: {}:{}".format(addr[0], addr[1]))
-            client_handler = threading.Thread(target=self.execute, args=(client,))
+            client_handler = threading.Thread(target=self.shell, args=(client,))
             client_handler.start()
 
-    def execute(self, client_socket):
-        request = client_socket.recv(MAX_SIZE)
-        print("[*] Command Received '{}'".format(request.decode(ENCODE).rstrip()))
-        output = self.run_command(request)
-        print("[*] Command Executed")
-        client_socket.send(output)
+    def shell(self, client):
+        while True:
+            client.send(PROMPT)
+            request = client.recv(MAX_SIZE)
+            print("[*] Command Received '{}'".format(request.decode(ENCODE).rstrip()))
+            output = self.run_command(request)
+            print("[*] Command Executed")
+            client.send(output)
 
     def run_command(self, command):
         command = command.rstrip()
         try:
             output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
         except:
-            output = "Failed to execute command"
+            output = b"Failed to execute command"
         return output

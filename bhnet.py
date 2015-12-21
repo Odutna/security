@@ -48,7 +48,7 @@ def main():
     if not opt.listen and len(opt.target) and opt.port > 0:
         # send and receive messages with the target
         client = make_client(opt)
-        client.talk()
+        client.chat()
     elif opt.listen:
         # receive command from clients
         server = ServerHandler(opt.target, opt.port)
