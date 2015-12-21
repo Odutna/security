@@ -24,6 +24,16 @@ class AbstractHandler(metaclass=abc.ABCMeta):
     def recv(self):
         pass
 
+    def recv_data(self):
+        """receive all data by loop"""
+        data = ''
+        while True:
+            response = self.recv()
+            if len(response) < MAX_SIZE:
+                return data + response.decode(ENCODE)
+            else:
+                data += response
+
     def talk(self):
         try:
             while True:
@@ -32,8 +42,8 @@ class AbstractHandler(metaclass=abc.ABCMeta):
                 message = sys.stdin.read()
                 if message:
                     self.send(message.encode(ENCODE))
-                response = self.recv()
-                print(response.decode(ENCODE))
+                response = self.recv_data()
+                print(response)
         except:
             print("[*] Exception Exiging.")
             traceback.print_exc(file=sys.stdout)
@@ -55,8 +65,7 @@ class TCPHandler(AbstractHandler):
         self.handler.send(message)
 
     def recv(self):
-        response = self.handler.recv(MAX_SIZE)
-        return response
+        return self.handler.recv(MAX_SIZE)
 
     def close(self):
         self.handler.close()
