@@ -96,13 +96,13 @@ class ServerHandler(object):
             socket.AF_INET, socket.SOCK_STREAM
         )
         self.handler.bind((host, port))
+        self.listen()
 
     def listen(self):
         self.handler.listen(MAX_CONNECTION)
         print("[*] Listening on {}:{}".format(self.host, self.port))
 
     def wait_command(self):
-        self.listen()
         print("[*] Waiting Command")
         while True:
             client, addr = self.handler.accept()
@@ -116,7 +116,6 @@ class ServerHandler(object):
         output = self.run_command(request)
         print("[*] Command Executed")
         client_socket.send(output)
-        client_socket.close()
 
     def run_command(self, command):
         command = command.rstrip()

@@ -27,7 +27,7 @@ def build_parser():
         '-c', '--command', action='store_true', help='initialize a command shell'
     )
     parser.add_argument(
-        '-U', '--upload', dest='destination',
+        '-U', '--upload', dest='upload_dest',
         help='upon receiving connection upload a file and write to [destination]'
     )
     return parser
@@ -50,10 +50,12 @@ def main():
         client = make_client(opt)
         client.talk()
     elif opt.listen:
-        # receive messages from clients
+        # receive command from clients
         server = ServerHandler(opt.target, opt.port)
         if opt.command:
             server.wait_command()
+        elif opt.upload_dest:
+            pass
 
 
 if __name__ == '__main__':
