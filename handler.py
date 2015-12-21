@@ -100,16 +100,17 @@ class ServerHandler(object):
     def listen(self):
         self.handler.listen(MAX_CONNECTION)
         print("[*] Listening on {}:{}".format(self.host, self.port))
-        self.accept()
 
-    def accept(self):
+    def wait_command(self):
+        self.listen()
+        print("[*] Waiting Command")
         while True:
             client, addr = self.handler.accept()
             print("[*] Accepted connection from: {}:{}".format(addr[0], addr[1]))
-            client_handler = threading.Thread(target=self.handle_client, args=(client,))
+            client_handler = threading.Thread(target=self.execute, args=(client,))
             client_handler.start()
 
-    def handle_client(self, client_socket):
+    def execute(self, client_socket):
         request = client_socket.recv(MAX_SIZE)
         print("[*] Command Received '{}'".format(request.decode(ENCODE).rstrip()))
         output = self.run_command(request)
@@ -120,9 +121,7 @@ class ServerHandler(object):
     def run_command(self, command):
         command = command.rstrip()
         try:
-            output = subprocess.check_output(
-                command, stderr=subprocess.STDOUT, shell=True
-            )
+            output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
         except:
-            output = "Failed to execute command."
+            output = "Failed to execute command"
         return output
