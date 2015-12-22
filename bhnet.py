@@ -20,10 +20,6 @@ def parse_options():
         help='listen on [host]:[port] for incoming connections'
     )
     parser.add_argument(
-        '-e', '--execute', dest='file_to_run',
-        help='execute the given file upon receiving a connection'
-    )
-    parser.add_argument(
         '-c', '--command', action='store_true', help='initialize a command shell'
     )
     parser.add_argument(
