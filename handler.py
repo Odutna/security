@@ -134,6 +134,7 @@ class ServerHandler(object):
         client, addr = self.handler.accept()
         client_handler = TCPHandler(*addr, handler=client)
         file_buffer = client_handler.recv_data()
+        print("[*] Contents Received")
         try:
             file_descriptor = open(path, 'wb')
             file_descriptor.write(bytes(file_buffer, ENCODE))
