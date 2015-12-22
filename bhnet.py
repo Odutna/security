@@ -40,7 +40,7 @@ def make_client(opt):
 
 def main():
     opt = parse_options()
-    if not opt.listen and len(opt.target) and opt.port > 0:
+    if not opt.listen and opt.target and opt.port > 0:
         # send and receive messages with the target
         client = make_client(opt)
         client.connect()
