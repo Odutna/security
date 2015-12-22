@@ -25,6 +25,10 @@ class AbstractHandler(metaclass=abc.ABCMeta):
     def recv(self):
         pass
 
+    @abc.abstractmethod
+    def connect(self):
+        pass
+
     def recv_data(self):
         """receive all data by loop"""
         data = ''
@@ -86,6 +90,9 @@ class UDPHandler(AbstractHandler):
     def recv(self):
         data, addr = self.handler.recvfrom(MAX_SIZE)
         return data
+
+    def connect(self):
+        pass
 
 
 class ServerHandler(object):
