@@ -104,28 +104,28 @@ class ServerHandler(object):
         print("[*] Listening on {}:{}".format(self.host, self.port))
 
     def wait_command(self):
+        def shell(client):
+            while True:
+                client.send(PROMPT)
+                request = client.recv_data()
+                print("[*] Command Received '{}'".format(request.rstrip()))
+                output = run_command(request)
+                print("[*] Command Executed")
+                client.send(output)
+
+        def run_command(command):
+            command = command.rstrip()
+            try:
+                output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+            except:
+                output = b"Failed to execute command"
+            return output
+
         print("[*] Waiting Command")
         while True:
             client, addr = self.handler.accept()
             print("[*] Accepted connection from: {}:{}".format(*addr))
             client_handler = threading.Thread(
-                target=self.shell, args=(TCPHandler(*addr, handler=client),)
+                target=shell, args=(TCPHandler(*addr, handler=client),)
             )
             client_handler.start()
-
-    def shell(self, client):
-        while True:
-            client.send(PROMPT)
-            request = client.recv_data()
-            print("[*] Command Received '{}'".format(request.rstrip()))
-            output = self.run_command(request)
-            print("[*] Command Executed")
-            client.send(output)
-
-    def run_command(self, command):
-        command = command.rstrip()
-        try:
-            output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
-        except:
-            output = b"Failed to execute command"
-        return output
