@@ -53,7 +53,7 @@ def main():
         # receive command from clients
         server = ServerHandler(opt.target, opt.port)
         if opt.command:
-            server.wait_command()
+            server.shell()
         elif opt.upload_dest:
             pass
 

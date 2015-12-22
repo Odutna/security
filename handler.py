@@ -103,17 +103,17 @@ class ServerHandler(object):
         self.handler.listen(MAX_CONNECTION)
         print("[*] Listening on {}:{}".format(self.host, self.port))
 
-    def wait_command(self):
-        def shell(client):
+    def shell(self):
+        def _shell(client):
             while True:
                 client.send(PROMPT)
                 request = client.recv_data()
                 print("[*] Command Received '{}'".format(request.rstrip()))
-                output = run_command(request)
+                output = execute(request)
                 print("[*] Command Executed")
                 client.send(output)
 
-        def run_command(command):
+        def execute(command):
             command = command.rstrip()
             try:
                 output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
@@ -126,6 +126,6 @@ class ServerHandler(object):
             client, addr = self.handler.accept()
             print("[*] Accepted connection from: {}:{}".format(*addr))
             client_handler = threading.Thread(
-                target=shell, args=(TCPHandler(*addr, handler=client),)
+                target=_shell, args=(TCPHandler(*addr, handler=client),)
             )
             client_handler.start()
