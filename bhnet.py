@@ -55,8 +55,7 @@ def main():
         if opt.command:
             server.shell()
         elif opt.upload_dest:
-            pass
-
+            server.upload(opt.upload_dest)
 
 if __name__ == '__main__':
     main()

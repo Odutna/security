@@ -40,7 +40,7 @@ class AbstractHandler(metaclass=abc.ABCMeta):
             while True:
                 message = sys.stdin.read()
                 if message:
-                    self.send(message.encode(ENCODE))
+                    self.send(bytes(message, ENCODE))
                 response = self.recv_data()
                 print(response)
         except:
@@ -129,3 +129,16 @@ class ServerHandler(object):
                 target=_shell, args=(TCPHandler(*addr, handler=client),)
             )
             client_handler.start()
+
+    def upload(self, path):
+        client, addr = self.handler.accept()
+        client_handler = TCPHandler(*addr, handler=client)
+        file_buffer = client_handler.recv_data()
+        try:
+            file_descriptor = open(path, 'wb')
+            file_descriptor.write(bytes(file_buffer, ENCODE))
+            file_descriptor.close()
+            client_handler.send(bytes("Successfully saved file to {}".format(path), ENCODE))
+        except:
+            client_handler.send(bytes("Failed saved file to {}".format(path), ENCODE))
+            traceback.print_exc(file=sys.stdout)
