@@ -18,15 +18,15 @@ class AbstractHandler(metaclass=abc.ABCMeta):
         self.port = port
 
     @abc.abstractmethod
+    def connect(self):
+        pass
+
+    @abc.abstractmethod
     def send(self):
         pass
 
     @abc.abstractmethod
     def recv(self):
-        pass
-
-    @abc.abstractmethod
-    def connect(self):
         pass
 
     def recv_data(self):
@@ -84,15 +84,15 @@ class UDPHandler(AbstractHandler):
             socket.AF_INET, socket.SOCK_DGRAM
         )
 
+    def connect(self):
+        pass
+
     def send(self, message):
         self.handler.sendto(message, (self.host, self.port))
 
     def recv(self):
         data, addr = self.handler.recvfrom(MAX_SIZE)
         return data
-
-    def connect(self):
-        pass
 
 
 class ServerHandler(object):
