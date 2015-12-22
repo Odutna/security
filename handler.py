@@ -49,16 +49,18 @@ class AbstractHandler(metaclass=abc.ABCMeta):
 
 
 class TCPHandler(AbstractHandler):
-    def __init__(self, host, port):
+    def __init__(self, host, port, handler=None):
         super().__init__(host, port)
         # AF_INET: IPv4, SOCK_STREAM: TCP
         self.handler = socket.socket(
             socket.AF_INET, socket.SOCK_STREAM
-        )
-        self.handler.connect((host, port))
+        ) if not handler else handler
 
     def __del__(self):
         self.handler.close()
+
+    def connect(self):
+        self.handler.connect((self.host, self.port))
 
     def send(self, message):
         self.handler.send(message)
@@ -105,15 +107,17 @@ class ServerHandler(object):
         print("[*] Waiting Command")
         while True:
             client, addr = self.handler.accept()
-            print("[*] Accepted connection from: {}:{}".format(addr[0], addr[1]))
-            client_handler = threading.Thread(target=self.shell, args=(client,))
+            print("[*] Accepted connection from: {}:{}".format(*addr))
+            client_handler = threading.Thread(
+                target=self.shell, args=(TCPHandler(*addr, handler=client),)
+            )
             client_handler.start()
 
     def shell(self, client):
         while True:
             client.send(PROMPT)
-            request = client.recv(MAX_SIZE)
-            print("[*] Command Received '{}'".format(request.decode(ENCODE).rstrip()))
+            request = client.recv_data()
+            print("[*] Command Received '{}'".format(request.rstrip()))
             output = self.run_command(request)
             print("[*] Command Executed")
             client.send(output)

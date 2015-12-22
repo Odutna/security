@@ -4,7 +4,7 @@ import argparse
 from handler import TCPHandler, UDPHandler, ServerHandler
 
 
-def build_parser():
+def parse_options():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-t', '--target', required=True, help='target host'
@@ -30,7 +30,8 @@ def build_parser():
         '-U', '--upload', dest='upload_dest',
         help='upon receiving connection upload a file and write to [destination]'
     )
-    return parser
+    options = parser.parse_args()
+    return options
 
 
 def make_client(opt):
@@ -42,12 +43,11 @@ def make_client(opt):
 
 
 def main():
-    parser = build_parser()
-    opt = parser.parse_args()
-
+    opt = parse_options()
     if not opt.listen and len(opt.target) and opt.port > 0:
         # send and receive messages with the target
         client = make_client(opt)
+        client.connect()
         client.chat()
     elif opt.listen:
         # receive command from clients
