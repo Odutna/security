@@ -6,6 +6,8 @@ import socket
 import threading
 import subprocess
 
+from utils import hexdump
+
 MAX_SIZE = 4096
 MAX_CONNECTION = 5
 ENCODE = 'utf-8'
@@ -35,9 +37,9 @@ class AbstractClientHandler(metaclass=abc.ABCMeta):
         while True:
             response = self.recv()
             if len(response) < MAX_SIZE:
-                return data + response.decode(ENCODE)
+                return data + response
             else:
-                data += response.decode(ENCODE)
+                data += response
 
     def chat(self):
         try:
@@ -67,10 +69,12 @@ class TCPClientHandler(AbstractClientHandler):
         self.handler.connect((self.host, self.port))
 
     def send(self, message):
+        if isinstance(message, str):
+            message = bytes(message, ENCODE)
         self.handler.send(message)
 
     def recv(self):
-        return self.handler.recv(MAX_SIZE)
+        return self.handler.recv(MAX_SIZE).decode(ENCODE)
 
     def close(self):
         self.handler.close()
@@ -88,11 +92,13 @@ class UDPClientHandler(AbstractClientHandler):
         pass
 
     def send(self, message):
+        if isinstance(message, str):
+            message = bytes(message, ENCODE)
         self.handler.sendto(message, (self.host, self.port))
 
     def recv(self):
         data, addr = self.handler.recvfrom(MAX_SIZE)
-        return data
+        return data.decode(ENCODE)
 
 
 class ServerHandler(object):
@@ -104,7 +110,7 @@ class ServerHandler(object):
             socket.AF_INET, socket.SOCK_STREAM
         )
         self.handler.bind((host, port))
-        self.listen(MAX_CONNECTION)
+        self.listen()
 
     def listen(self):
         self.handler.listen(MAX_CONNECTION)
@@ -152,11 +158,45 @@ class ServerHandler(object):
             traceback.print_exc(file=sys.stdout)
 
     def proxy(self, remote_host, remote_port, receive_first):
+        def proxy_handler(client, remote):
+            remote.connect()
+            # Some server demons send data to client first. (Ex. FTP)
+            if receive_first:
+                remote_buffer = remote.recv_data()
+                hexdump(remote_buffer)
+                if remote_buffer:
+                    print("<==] Sending {} bytes to local.".format(len(remote_buffer)))
+                    client.send(remote_buffer)
+
+            while True:
+                local_buffer = client.recv_data()
+                if local_buffer:
+                    print("==>] Received {} bytes from local.".format(len(local_buffer)))
+                    hexdump(local_buffer)
+                    remote.send(local_buffer)
+                    print("==>] Sent to remote.")
+
+                remote_buffer = remote.recv_data()
+                if remote_buffer:
+                    print("<==] Received {} bytes from remote.".format(len(remote_buffer)))
+                    hexdump(remote_buffer)
+                    client.send(remote_buffer)
+                    print("<==] Sent to local.")
+
+                if not local_buffer or not remote_buffer:
+                    client.close()
+                    remote.close()
+                    print("[*] No more data. Closing connections.")
+                    break
+
         print("[*] Waiting Connection")
         while True:
             client, addr = self.handler.accept()
             print("[*] Accepted connection from: {}:{}".format(*addr))
             proxy_thread = threading.Thread(
-                target=proxy_handler, args=(client, remote_host, remote_port, receive_first)
+                target=proxy_handler, args=(
+                    TCPClientHandler(*addr, handler=client),
+                    TCPClientHandler(remote_host, remote_port)
+                )
             )
             proxy_thread.start()
