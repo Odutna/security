@@ -104,7 +104,7 @@ class ServerHandler(object):
             socket.AF_INET, socket.SOCK_STREAM
         )
         self.handler.bind((host, port))
-        self.listen()
+        self.listen(MAX_CONNECTION)
 
     def listen(self):
         self.handler.listen(MAX_CONNECTION)
