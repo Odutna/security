@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import argparse
 
-from handler import TCPHandler, UDPHandler, ServerHandler
+from handler import TCPClientHandler, UDPClientHandler, ServerHandler
 
 
 def parse_options():
@@ -32,9 +32,9 @@ def parse_options():
 
 def make_client(opt):
     if not opt.udp:
-        client = TCPHandler(opt.target, opt.port)
+        client = TCPClientHandler(opt.target, opt.port)
     else:
-        client = UDPHandler(opt.target, opt.port)
+        client = UDPClientHandler(opt.target, opt.port)
     return client
 
 

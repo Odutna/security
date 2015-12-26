@@ -12,7 +12,7 @@ ENCODE = 'utf-8'
 PROMPT = b'<BHP:#> '
 
 
-class AbstractHandler(metaclass=abc.ABCMeta):
+class AbstractClientHandler(metaclass=abc.ABCMeta):
     def __init__(self, host, port):
         self.host = host
         self.port = port
@@ -52,7 +52,7 @@ class AbstractHandler(metaclass=abc.ABCMeta):
             traceback.print_exc(file=sys.stdout)
 
 
-class TCPHandler(AbstractHandler):
+class TCPClientHandler(AbstractClientHandler):
     def __init__(self, host, port, handler=None):
         super().__init__(host, port)
         # AF_INET: IPv4, SOCK_STREAM: TCP
@@ -76,7 +76,7 @@ class TCPHandler(AbstractHandler):
         self.handler.close()
 
 
-class UDPHandler(AbstractHandler):
+class UDPClientHandler(AbstractClientHandler):
     def __init__(self, host, port):
         super().__init__(host, port)
         # AF_INET: IPv4, SOCK_DGRAM: UDP
@@ -133,13 +133,13 @@ class ServerHandler(object):
             client, addr = self.handler.accept()
             print("[*] Accepted connection from: {}:{}".format(*addr))
             client_handler = threading.Thread(
-                target=_shell, args=(TCPHandler(*addr, handler=client),)
+                target=_shell, args=(TCPClientHandler(*addr, handler=client),)
             )
             client_handler.start()
 
     def upload(self, path):
         client, addr = self.handler.accept()
-        client_handler = TCPHandler(*addr, handler=client)
+        client_handler = TCPClientHandler(*addr, handler=client)
         file_buffer = client_handler.recv_data()
         print("[*] Contents Received")
         try:
