@@ -42,11 +42,11 @@ class AbstractClientHandler(metaclass=abc.ABCMeta):
     def chat(self):
         try:
             while True:
-                message = sys.stdin.read()
+                message = input() + '\n'
                 if message:
                     self.send(bytes(message, ENCODE))
                 response = self.recv_data()
-                print(response)
+                print(response.rstrip())
         except:
             print("[*] Exception Exiging.")
             traceback.print_exc(file=sys.stdout)
@@ -125,7 +125,7 @@ class ServerHandler(object):
             try:
                 output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
             except:
-                output = b"Failed to execute command"
+                output = b"Failed to execute command\n"
             return output
 
         print("[*] Waiting Command")
