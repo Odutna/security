@@ -150,3 +150,13 @@ class ServerHandler(object):
         except:
             client_handler.send(bytes("Failed saved file to {}".format(path), ENCODE))
             traceback.print_exc(file=sys.stdout)
+
+    def proxy(self, remote_host, remote_port, receive_first):
+        print("[*] Waiting Connection")
+        while True:
+            client, addr = self.handler.accept()
+            print("[*] Accepted connection from: {}:{}".format(*addr))
+            proxy_thread = threading.Thread(
+                target=proxy_handler, args=(client, remote_host, remote_port, receive_first)
+            )
+            proxy_thread.start()
