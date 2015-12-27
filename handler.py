@@ -6,7 +6,8 @@ import socket
 import threading
 import subprocess
 
-from utils import hexdump
+from hexdump import dump
+
 
 MAX_SIZE = 4096
 MAX_CONNECTION = 5
@@ -161,7 +162,7 @@ class ServerHandler(object):
         def _transmit(_from, _to):
             content = _from.recv_data()
             if content:
-                hexdump(content)
+                print(dump(bytes(content, ENCODE)))
                 _to.send(content)
             return content
 
