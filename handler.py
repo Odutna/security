@@ -158,32 +158,32 @@ class ServerHandler(object):
             traceback.print_exc(file=sys.stdout)
 
     def proxy(self, remote_host, remote_port, receive_first):
+        def _transmit(_from, _to):
+            content = _from.recv_data()
+            if content:
+                hexdump(content)
+                _to.send(content)
+            return content
+
         def proxy_handler(client, remote):
             remote.connect()
             # Some server demons send data to client first. (Ex. FTP)
             if receive_first:
-                remote_buffer = remote.recv_data()
-                hexdump(remote_buffer)
-                if remote_buffer:
-                    print("<==] Sending {} bytes to local.".format(len(remote_buffer)))
-                    client.send(remote_buffer)
+                from_remote = _transmit(remote, client)
+                print("<==] Sending {} bytes to local.".format(len(from_remote)))
 
             while True:
-                local_buffer = client.recv_data()
-                if local_buffer:
-                    print("==>] Received {} bytes from local.".format(len(local_buffer)))
-                    hexdump(local_buffer)
-                    remote.send(local_buffer)
+                from_local = _transmit(client, remote)
+                if from_local:
+                    print("==>] Received {} bytes from local.".format(len(from_local)))
                     print("==>] Sent to remote.")
 
-                remote_buffer = remote.recv_data()
-                if remote_buffer:
-                    print("<==] Received {} bytes from remote.".format(len(remote_buffer)))
-                    hexdump(remote_buffer)
-                    client.send(remote_buffer)
+                from_remote = _transmit(remote, client)
+                if from_remote:
+                    print("<==] Received {} bytes from remote.".format(len(from_remote)))
                     print("<==] Sent to local.")
 
-                if not local_buffer or not remote_buffer:
+                if not from_local or not from_remote:
                     client.close()
                     remote.close()
                     print("[*] No more data. Closing connections.")
