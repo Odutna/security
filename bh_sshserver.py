@@ -4,7 +4,7 @@ import threading
 import sys
 import traceback
 
-host_key = paramiko.RSAKey(filename='/home/aminami/.ssh/id_rsa')
+host_key = paramiko.RSAKey(filename='./test_rsa.key')
 
 
 class Server(paramiko.ServerInterface):
@@ -25,7 +25,7 @@ server = sys.argv[1]
 ssh_port = int(sys.argv[2])
 
 try:
-    sock = socket.socket(socket.AF_INET, socket.CODK_STREAM)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind((server, ssh_port))
     sock.listen(100)
@@ -51,7 +51,7 @@ try:
     chan.send('Welcome to bh_ssh')
     while True:
         try:
-            command = raw_input("Enter command: ").strip('\n')
+            command = input("Enter command: ").strip('\n')
             if command != 'exit':
                 chan.send(command)
                 print(chan.recv(1024))
