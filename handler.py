@@ -21,6 +21,9 @@ class AbstractClientHandler(metaclass=abc.ABCMeta):
         self.host = host
         self.port = port
 
+    def __del__(self):
+        self.handler.close()
+
     @abc.abstractmethod
     def connect(self):
         pass
@@ -64,9 +67,6 @@ class TCPClientHandler(AbstractClientHandler):
             socket.AF_INET, socket.SOCK_STREAM
         ) if not handler else handler
 
-    def __del__(self):
-        self.handler.close()
-
     def connect(self):
         self.handler.connect((self.host, self.port))
 
@@ -90,6 +90,9 @@ class UDPClientHandler(AbstractClientHandler):
             socket.AF_INET, socket.SOCK_DGRAM
         )
 
+    def __del__(self):
+        pass
+
     def connect(self):
         pass
 
@@ -110,9 +113,6 @@ class SSHClientHandler(AbstractClientHandler):
         self.passwd = passwd
         self.handler = paramiko.SSHClient()
         self.session = None
-
-    def __del__(self):
-        self.handler.close()
 
     def connect(self):
         self.handler.set_missing_host_key_policy(paramiko.AutoAddPolicy())
