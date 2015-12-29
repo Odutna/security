@@ -122,6 +122,7 @@ class SSHClientHandler(AbstractClientHandler):
             username=self.user,
             password=self.passwd
         )
+        self.session = self.handler.get_transport().open_session()
 
     def send(self, message):
         if isinstance(message, str):
@@ -132,7 +133,6 @@ class SSHClientHandler(AbstractClientHandler):
         return self.session.recv(MAX_SIZE).decode(ENCODE)
 
     def exec_command(self, command):
-        self.session = self.handler.get_transport().open_session()
         self.session.exec_command(command)
 
 
