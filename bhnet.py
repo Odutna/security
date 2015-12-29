@@ -47,7 +47,9 @@ def main():
     opt = parse_options()
     if not opt.listen and opt.target and opt.port > 0:
         if opt.ssh:
-            client = SSHClientHandler(opt.target, opt.port, 'aminami', '373373')
+            user = input('User: ')
+            passwd = input('Password: ')
+            client = SSHClientHandler(opt.target, opt.port, user, passwd)
             client.connect()
             client.exec_command('echo test')
             print(client.recv())
