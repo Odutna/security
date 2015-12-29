@@ -58,9 +58,12 @@ def main():
             passwd = getpass()
             client = SSHClientHandler(opt.target, opt.port, user, passwd)
             while True:
-                command = input('Command: ')
-                client.exec_command(command)
-                print(client.recv_all())
+                try:
+                    command = input('Command: ')
+                    client.exec_command(command)
+                    print(client.recv_all())
+                except KeyboardInterrupt:
+                    print('Connection closed.')
         else:
             # send and receive messages with the target
             client = make_client(opt)

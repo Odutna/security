@@ -9,6 +9,8 @@ import subprocess
 from hexdump import dump
 import paramiko
 
+from utils import until_interrupt
+
 
 MAX_SIZE = 4096
 MAX_CONNECTION = 5
@@ -46,17 +48,13 @@ class AbstractClientHandler(metaclass=abc.ABCMeta):
             else:
                 data += response
 
+    @until_interrupt
     def chat(self):
-        try:
-            while True:
-                message = input() + '\n'
-                if message:
-                    self.send(bytes(message, ENCODE))
-                response = self.recv_all()
-                print(response.rstrip())
-        except:
-            print("[*] Exception Exiging.")
-            traceback.print_exc(file=sys.stdout)
+        message = input() + '\n'
+        if message:
+            self.send(bytes(message, ENCODE))
+        response = self.recv_all()
+        print(response.rstrip())
 
 
 class TCPClientHandler(AbstractClientHandler):
@@ -66,7 +64,8 @@ class TCPClientHandler(AbstractClientHandler):
         self.handler = socket.socket(
             socket.AF_INET, socket.SOCK_STREAM
         ) if not handler else handler
-        self.connect()
+        if not handler:
+            self.connect()
 
     def connect(self):
         self.handler.connect((self.host, self.port))
@@ -159,14 +158,14 @@ class BaseServerHandler(metaclass=abc.ABCMeta):
 
 class BasicServerHandler(BaseServerHandler):
     def shell(self):
+        @until_interrupt
         def _shell(client):
-            while True:
-                client.send(PROMPT)
-                request = client.recv_all()
-                print("[*] Command Received '{}'".format(request.rstrip()))
-                output = execute(request)
-                print("[*] Command Executed")
-                client.send(output)
+            client.send(PROMPT)
+            request = client.recv_all()
+            print("[*] Command Received '{}'".format(request.rstrip()))
+            output = execute(request)
+            print("[*] Command Executed")
+            client.send(output)
 
         def execute(command):
             command = command.rstrip()
@@ -255,9 +254,9 @@ class SSHServerHandler(BaseServerHandler, paramiko.ServerInterface):
         self.auth_passwd = passwd
 
     def check_channel_request(self, kind, chanid):
-          if kind == 'session':
-              return paramiko.OPEN_SUCCEEDED
-          return paramiko.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
+        if kind == 'session':
+            return paramiko.OPEN_SUCCEEDED
+        return paramiko.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
 
     def check_auth_password(self, username, password):
         if (username == self.auth_user) and (password == self.auth_passwd):
