@@ -144,6 +144,8 @@ class BaseServerHandler(metaclass=abc.ABCMeta):
         self.handler = socket.socket(
             socket.AF_INET, socket.SOCK_STREAM
         )
+        self.listen()
+
     def __del__(self):
         self.handler.close()
 
