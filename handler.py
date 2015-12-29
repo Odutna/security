@@ -7,6 +7,7 @@ import threading
 import subprocess
 
 from hexdump import dump
+import paramiko
 
 
 MAX_SIZE = 4096
@@ -100,6 +101,35 @@ class UDPClientHandler(AbstractClientHandler):
     def recv(self):
         data, addr = self.handler.recvfrom(MAX_SIZE)
         return data.decode(ENCODE)
+
+
+class SSHClientHandler(object):
+    def __init__(self, host, port, user, passwd):
+        self.host = host
+        self.port = port
+        self.user = user
+        self.passwd = passwd
+        self.handler = paramiko.SSHClient()
+        self.session = None
+
+    def __del__(self):
+        self.handler.close()
+
+    def recv(self):
+        return self.session.recv(MAX_SIZE)
+
+    def connect(self):
+        self.handler.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.handler.connect(
+            self.host,
+            port=self.port,
+            username=self.user,
+            password=self.passwd
+        )
+
+    def exec_command(self, command):
+        self.session = self.handler.get_transport().open_session()
+        self.session.exec_command(command)
 
 
 class ServerHandler(object):

@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import argparse
 
-from handler import TCPClientHandler, UDPClientHandler, ServerHandler
+from handler import TCPClientHandler, UDPClientHandler, ServerHandler, SSHClientHandler
 
 
 def parse_options():
@@ -26,6 +26,11 @@ def parse_options():
         '-U', '--upload', dest='upload_dest',
         help='upon receiving connection upload a file and write to [destination]'
     )
+    parser.add_argument(
+        '-s', '--ssh', action='store_true', dest='ssh',
+        help='open ssh connection and execute command'
+    )
+
     options = parser.parse_args()
     return options
 
@@ -41,10 +46,16 @@ def make_client(opt):
 def main():
     opt = parse_options()
     if not opt.listen and opt.target and opt.port > 0:
-        # send and receive messages with the target
-        client = make_client(opt)
-        client.connect()
-        client.chat()
+        if opt.ssh:
+            client = SSHClientHandler(opt.target, opt.port, 'aminami', '373373')
+            client.connect()
+            client.exec_command('echo test')
+            print(client.recv())
+        else:
+            # send and receive messages with the target
+            client = make_client(opt)
+            client.connect()
+            client.chat()
     elif opt.listen:
         # receive command from clients
         server = ServerHandler(opt.target, opt.port)
