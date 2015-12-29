@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import argparse
+from getpass import getpass
 
 from handler import TCPClientHandler, UDPClientHandler, ServerHandler, SSHClientHandler
 
@@ -48,7 +49,7 @@ def main():
     if not opt.listen and opt.target and opt.port > 0:
         if opt.ssh:
             user = input('User: ')
-            passwd = input('Password: ')
+            passwd = getpass()
             client = SSHClientHandler(opt.target, opt.port, user, passwd)
             client.connect()
             client.exec_command('echo test')
