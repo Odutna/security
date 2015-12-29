@@ -32,7 +32,7 @@ class AbstractClientHandler(metaclass=abc.ABCMeta):
     def recv(self):
         pass
 
-    def recv_data(self):
+    def recv_all(self):
         """receive all data by loop"""
         data = ''
         while True:
@@ -48,7 +48,7 @@ class AbstractClientHandler(metaclass=abc.ABCMeta):
                 message = input() + '\n'
                 if message:
                     self.send(bytes(message, ENCODE))
-                response = self.recv_data()
+                response = self.recv_all()
                 print(response.rstrip())
         except:
             print("[*] Exception Exiging.")
@@ -121,7 +121,7 @@ class ServerHandler(object):
         def _shell(client):
             while True:
                 client.send(PROMPT)
-                request = client.recv_data()
+                request = client.recv_all()
                 print("[*] Command Received '{}'".format(request.rstrip()))
                 output = execute(request)
                 print("[*] Command Executed")
@@ -147,7 +147,7 @@ class ServerHandler(object):
     def upload(self, path):
         client, addr = self.handler.accept()
         client_handler = TCPClientHandler(*addr, handler=client)
-        file_buffer = client_handler.recv_data()
+        file_buffer = client_handler.recv_all()
         print("[*] Contents Received")
         try:
             file_descriptor = open(path, 'wb')
@@ -160,7 +160,7 @@ class ServerHandler(object):
 
     def proxy(self, remote_host, remote_port, receive_first):
         def _transmit(_from, _to):
-            content = _from.recv_data()
+            content = _from.recv_all()
             if content:
                 print(dump(bytes(content, ENCODE)))
                 _to.send(content)
