@@ -116,7 +116,7 @@ class SSHClientHandler(object):
         self.handler.close()
 
     def recv(self):
-        return self.session.recv(MAX_SIZE)
+        return self.session.recv(MAX_SIZE).decode(ENCODE)
 
     def connect(self):
         self.handler.set_missing_host_key_policy(paramiko.AutoAddPolicy())
