@@ -52,8 +52,10 @@ def main():
             passwd = getpass()
             client = SSHClientHandler(opt.target, opt.port, user, passwd)
             client.connect()
-            client.exec_command('echo test')
-            print(client.recv())
+            while True:
+                command = input('Command: ')
+                client.exec_command(command)
+                print(client.recv_all())
         else:
             # send and receive messages with the target
             client = make_client(opt)
