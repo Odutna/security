@@ -66,6 +66,7 @@ class TCPClientHandler(AbstractClientHandler):
         self.handler = socket.socket(
             socket.AF_INET, socket.SOCK_STREAM
         ) if not handler else handler
+        self.connect()
 
     def connect(self):
         self.handler.connect((self.host, self.port))
@@ -113,6 +114,7 @@ class SSHClientHandler(AbstractClientHandler):
         self.passwd = passwd
         self.handler = paramiko.SSHClient()
         self.session = None
+        self.connect()
 
     def connect(self):
         self.handler.set_missing_host_key_policy(paramiko.AutoAddPolicy())

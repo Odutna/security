@@ -57,7 +57,6 @@ def main():
             user = input('User: ')
             passwd = getpass()
             client = SSHClientHandler(opt.target, opt.port, user, passwd)
-            client.connect()
             while True:
                 command = input('Command: ')
                 client.exec_command(command)
@@ -65,7 +64,6 @@ def main():
         else:
             # send and receive messages with the target
             client = make_client(opt)
-            client.connect()
             client.chat()
     elif opt.listen:
         # receive command from clients
