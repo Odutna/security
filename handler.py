@@ -136,7 +136,7 @@ class SSHClientHandler(AbstractClientHandler):
         self.session.exec_command(command)
 
 
-class ServerHandler(object):
+class BaseServerHandler(metaclass=abc.ABCMeta):
     def __init__(self, host, port):
         self.host = host
         self.port = port
@@ -144,13 +144,16 @@ class ServerHandler(object):
         self.handler = socket.socket(
             socket.AF_INET, socket.SOCK_STREAM
         )
-        self.handler.bind((host, port))
-        self.listen()
+    def __del__(self):
+        self.handler.close()
 
     def listen(self):
+        self.handler.bind((self.host, self.port))
         self.handler.listen(MAX_CONNECTION)
         print("[*] Listening on {}:{}".format(self.host, self.port))
 
+
+class BasicServerHandler(BaseServerHandler):
     def shell(self):
         def _shell(client):
             while True:
@@ -235,3 +238,37 @@ class ServerHandler(object):
                 )
             )
             proxy_thread.start()
+
+
+class SSHServerHandler(BaseServerHandler, paramiko.ServerInterface):
+    HOST_KEY = paramiko.RSAKey(filename='test_rsa.key')
+
+    def __init__(self, host, port, user, passwd):
+        super().__init__(host, port)
+        self.handler.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.event = threading.Event()
+        self.auth_user = user
+        self.auth_passwd = passwd
+
+    def check_channel_request(self, kind, chanid):
+          if kind == 'session':
+              return paramiko.OPEN_SUCCEEDED
+          return paramiko.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
+
+    def check_auth_password(self, username, password):
+        if (username == self.auth_user) and (password == self.auth_passwd):
+            return paramiko.AUTH_SUCCESSFUL
+        return paramiko.AUTH_FAILED
+
+    def start(self):
+        client, addr = self.handler.accept()
+        print('[+] Got a connection!')
+        transport = paramiko.Transport(client)
+        transport.add_server_key(self.HOST_KEY)
+        transport.start_server(server=self)
+        chan = transport.accept(20)
+        print('[+] Authenticated!')
+        chan.send(b'You Authenticated!')
+        # command = chan.recv(MAX_SIZE)
+        # settion = transport.open_session()
+        # session.exec_command(command)

@@ -2,7 +2,13 @@
 import argparse
 from getpass import getpass
 
-from handler import TCPClientHandler, UDPClientHandler, ServerHandler, SSHClientHandler
+from handler import (
+    TCPClientHandler,
+    UDPClientHandler,
+    SSHClientHandler,
+    BasicServerHandler,
+    SSHServerHandler,
+)
 
 
 def parse_options():
@@ -63,11 +69,18 @@ def main():
             client.chat()
     elif opt.listen:
         # receive command from clients
-        server = ServerHandler(opt.target, opt.port)
-        if opt.command:
-            server.shell()
-        elif opt.upload_dest:
-            server.upload(opt.upload_dest)
+        if opt.ssh:
+            server = SSHServerHandler(opt.target, opt.port, 'test', 'test')
+            server.listen()
+            server.start()
+        else:
+            server = BasicServerHandler(opt.target, opt.port)
+            server.listen()
+            if opt.command:
+                server.shell()
+            elif opt.upload_dest:
+                server.upload(opt.upload_dest)
+
 
 if __name__ == '__main__':
     main()
