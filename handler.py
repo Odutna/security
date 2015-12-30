@@ -64,6 +64,7 @@ class TCPClientHandler(AbstractClientHandler):
         ) if not handler else handler
         if not handler:
             self.connect()
+        atexit.register(self.handler.close)
 
     def connect(self):
         self.handler.connect((self.host, self.port))
@@ -78,8 +79,6 @@ class TCPClientHandler(AbstractClientHandler):
 
     def close(self):
         self.handler.close()
-
-    atexit.register(self.handler.close)
 
 
 class UDPClientHandler(AbstractClientHandler):
@@ -111,6 +110,7 @@ class SSHClientHandler(AbstractClientHandler):
         self.handler = paramiko.SSHClient()
         self.session = None
         self.connect()
+        atexit.register(self.handler.close)
 
     def connect(self):
         self.handler.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -133,8 +133,6 @@ class SSHClientHandler(AbstractClientHandler):
     def exec_command(self, command):
         self.session.exec_command(command)
 
-    atexit.register(self.handler.close)
-
 
 class BaseServerHandler(metaclass=abc.ABCMeta):
     def __init__(self, host, port):
@@ -145,13 +143,12 @@ class BaseServerHandler(metaclass=abc.ABCMeta):
             socket.AF_INET, socket.SOCK_STREAM
         )
         self.listen()
+        atexit.register(self.handler.close)
 
     def listen(self):
         self.handler.bind((self.host, self.port))
         self.handler.listen(MAX_CONNECTION)
         print("[*] Listening on {}:{}".format(self.host, self.port))
-
-    atexit.register(self.handler.close)
 
 
 class BasicServerHandler(BaseServerHandler):
