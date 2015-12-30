@@ -157,6 +157,7 @@ class BaseServerHandler(metaclass=abc.ABCMeta):
 
 
 class BasicServerHandler(BaseServerHandler):
+    @until_interrupt
     def shell(self):
         @until_interrupt
         def _shell(client):
@@ -176,13 +177,12 @@ class BasicServerHandler(BaseServerHandler):
             return output
 
         print("[*] Waiting Command")
-        while True:
-            client, addr = self.handler.accept()
-            print("[*] Accepted connection from: {}:{}".format(*addr))
-            client_handler = threading.Thread(
-                target=_shell, args=(TCPClientHandler(*addr, handler=client),)
-            )
-            client_handler.start()
+        client, addr = self.handler.accept()
+        print("[*] Accepted connection from: {}:{}".format(*addr))
+        client_handler = threading.Thread(
+            target=_shell, args=(TCPClientHandler(*addr, handler=client),)
+        )
+        client_handler.start()
 
     def upload(self, path):
         client, addr = self.handler.accept()
@@ -198,6 +198,7 @@ class BasicServerHandler(BaseServerHandler):
             client_handler.send(bytes("Failed saved file to {}".format(path), ENCODE))
             traceback.print_exc(file=sys.stdout)
 
+    @until_interrupt
     def proxy(self, remote_host, remote_port, receive_first):
         def _transmit(_from, _to):
             content = _from.recv_all()
@@ -231,16 +232,15 @@ class BasicServerHandler(BaseServerHandler):
                     break
 
         print("[*] Waiting Connection")
-        while True:
-            client, addr = self.handler.accept()
-            print("[*] Accepted connection from: {}:{}".format(*addr))
-            proxy_thread = threading.Thread(
-                target=proxy_handler, args=(
-                    TCPClientHandler(*addr, handler=client),
-                    TCPClientHandler(remote_host, remote_port)
-                )
+        client, addr = self.handler.accept()
+        print("[*] Accepted connection from: {}:{}".format(*addr))
+        proxy_thread = threading.Thread(
+            target=proxy_handler, args=(
+                TCPClientHandler(*addr, handler=client),
+                TCPClientHandler(remote_host, remote_port)
             )
-            proxy_thread.start()
+        )
+        proxy_thread.start()
 
 
 class SSHServerHandler(BaseServerHandler, paramiko.ServerInterface):
