@@ -5,6 +5,7 @@ import abc
 import socket
 import threading
 import subprocess
+import atexit
 
 from hexdump import dump
 import paramiko
@@ -22,9 +23,6 @@ class AbstractClientHandler(metaclass=abc.ABCMeta):
     def __init__(self, host, port):
         self.host = host
         self.port = port
-
-    def __del__(self):
-        self.handler.close()
 
     @abc.abstractmethod
     def connect(self):
@@ -81,6 +79,8 @@ class TCPClientHandler(AbstractClientHandler):
     def close(self):
         self.handler.close()
 
+    atexit.register(self.handler.close)
+
 
 class UDPClientHandler(AbstractClientHandler):
     def __init__(self, host, port):
@@ -89,9 +89,6 @@ class UDPClientHandler(AbstractClientHandler):
         self.handler = socket.socket(
             socket.AF_INET, socket.SOCK_DGRAM
         )
-
-    def __del__(self):
-        pass
 
     def connect(self):
         pass
@@ -136,6 +133,8 @@ class SSHClientHandler(AbstractClientHandler):
     def exec_command(self, command):
         self.session.exec_command(command)
 
+    atexit.register(self.handler.close)
+
 
 class BaseServerHandler(metaclass=abc.ABCMeta):
     def __init__(self, host, port):
@@ -147,13 +146,12 @@ class BaseServerHandler(metaclass=abc.ABCMeta):
         )
         self.listen()
 
-    def __del__(self):
-        self.handler.close()
-
     def listen(self):
         self.handler.bind((self.host, self.port))
         self.handler.listen(MAX_CONNECTION)
         print("[*] Listening on {}:{}".format(self.host, self.port))
+
+    atexit.register(self.handler.close)
 
 
 class BasicServerHandler(BaseServerHandler):
