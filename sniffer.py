@@ -18,8 +18,8 @@ MAX_SIZE = 65565
 
 class IP(Structure):
     _fields_ = [
-        ("ihl",           c_ubyte, 4),
         ("version",       c_ubyte, 4),
+        ("ihl",           c_ubyte, 4),
         ("tos",           c_ubyte),
         ("len",           c_ushort),
         ("id",            c_ushort),
@@ -50,7 +50,6 @@ class IP(Structure):
 
 
 class ICMP(Structure):
-
     _fields_ = [
         ("type",         c_ubyte),
         ("code",         c_ubyte),
@@ -109,8 +108,7 @@ class Sniffer(object):
 
         # if it's ICMP we want it
         if ip_header.protocol == "ICMP":
-
-            # calculate where our ICMP packet starts
+            # calculate where our ICMP packet starts from ip header length
             offset = ip_header.ihl * 4
             buf = raw_buffer[offset:offset + sizeof(ICMP)]
 
