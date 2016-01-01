@@ -8,6 +8,7 @@ from ctypes import (
     c_ubyte,
     c_ushort,
     c_ulong,
+    sizeof,
 )
 
 from utils import until_interrupt
@@ -46,6 +47,23 @@ class IP(Structure):
             self.protocol = self.protocol_map[self.protocol_num]
         except:
             self.protocol = str(self.protocol_num)
+
+
+class ICMP(Structure):
+
+    _fields_ = [
+        ("type",         c_ubyte),
+        ("code",         c_ubyte),
+        ("checksum",     c_ushort),
+        ("unused",       c_ushort),
+        ("next_hop_mtu", c_ushort)
+        ]
+
+    def __new__(self, socket_buffer):
+        return self.from_buffer_copy(socket_buffer)
+
+    def __init__(self, socket_buffer):
+        pass
 
 
 class Sniffer(object):
@@ -88,6 +106,18 @@ class Sniffer(object):
         print("Protocol: {} {} -> {}".format(
             ip_header.protocol, ip_header.src_address, ip_header.dst_address
         ))
+
+        # if it's ICMP we want it
+        if ip_header.protocol == "ICMP":
+
+            # calculate where our ICMP packet starts
+            offset = ip_header.ihl * 4
+            buf = raw_buffer[offset:offset + sizeof(ICMP)]
+
+            # create our ICMP structure
+            icmp_header = ICMP(buf)
+
+            print "ICMP -> Type: {:d} Code: {:d}".format(icmp_header.type, icmp_header.code)
 
 
 if __name__ == '__main__':
