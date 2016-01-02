@@ -124,7 +124,7 @@ class Scanner(object):
                 icmp_header = ICMP(buf)
                 # print('ICMP -> Type: {:d} Code: {:d}'.format(icmp_header.type, icmp_header.code))
 
-                get_probe = lambda x: x[len(x)-len(self.probe):].decode()
+                get_probe = lambda x: x[-len(self.probe):].decode()
                 if icmp_header.code == 3 and icmp_header.type == 3:
                     if IPAddress(ip_header.src_address) in IPNetwork(subnet):
                         if get_probe(raw_buffer) == self.probe:
