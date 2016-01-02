@@ -4,6 +4,7 @@ import socket
 import atexit
 import struct
 import threading
+import argparse
 from ctypes import (
     Structure,
     c_ubyte,
@@ -17,6 +18,18 @@ from utils import until_interrupt
 from handler import UDPClientHandler
 
 MAX_SIZE = 65565
+
+
+def parse_options():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-b', '--bind', required=True, help='ip that this scanner binds'
+    )
+    parser.add_argument(
+        '-n', '--subnet', required=True, help='scan target network'
+    )
+    options = parser.parse_args()
+    return options
 
 
 class IP(Structure):
@@ -129,7 +142,7 @@ class Scanner(object):
                 get_probe = lambda x: x[-len(self.probe):].decode()
                 # ICMP Code: 3 (Unreachable), Type: 3 (Port Unreachable)
                 if icmp_header.code == 3 and icmp_header.type == 3:
-                    if IPAddress(ip_header.src_address) in IPNetwork(subnet):
+                    if IPAddress(ip_header.src_address) in IPNetwork(self.subnet):
                         # ICMP response contains original received probe.
                         if get_probe(raw_buffer) == self.probe:
                             print('Host UP: {}'.format(ip_header.src_address))
@@ -153,8 +166,7 @@ class Scanner(object):
 
 
 if __name__ == '__main__':
-    host = '192.168.128.225'
-    subnet = '192.168.128.0/24'
-    scanner = Scanner(host, subnet)
+    opt = parse_options()
+    scanner = Scanner(opt.bind, opt.subnet)
     print('[*] Scan Starting...')
     scanner.scan()
