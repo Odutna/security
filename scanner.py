@@ -124,9 +124,13 @@ class Scanner(object):
                 icmp_header = ICMP(buf)
                 # print('ICMP -> Type: {:d} Code: {:d}'.format(icmp_header.type, icmp_header.code))
 
+                # If the host that received UDP packet is up,
+                # it returns ICMP Code:3, Type:3 response.
                 get_probe = lambda x: x[-len(self.probe):].decode()
+                # ICMP Code: 3 (Unreachable), Type: 3 (Port Unreachable)
                 if icmp_header.code == 3 and icmp_header.type == 3:
                     if IPAddress(ip_header.src_address) in IPNetwork(subnet):
+                        # ICMP response contains original received probe.
                         if get_probe(raw_buffer) == self.probe:
                             print('Host UP: {}'.format(ip_header.src_address))
 
