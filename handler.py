@@ -82,7 +82,7 @@ class TCPClientHandler(AbstractClientHandler):
 
 
 class UDPClientHandler(AbstractClientHandler):
-    def __init__(self, host, port):
+    def __init__(self, host=None, port=None):
         super().__init__(host, port)
         # AF_INET: IPv4, SOCK_DGRAM: UDP
         self.handler = socket.socket(
@@ -92,10 +92,12 @@ class UDPClientHandler(AbstractClientHandler):
     def connect(self):
         pass
 
-    def send(self, message):
+    def send(self, message, host=None, port=None):
+        host = self.host if not host else host
+        port = self.port if not port else port
         if isinstance(message, str):
             message = bytes(message, ENCODE)
-        self.handler.sendto(message, (self.host, self.port))
+        self.handler.sendto(message, (host, port))
 
     def recv(self):
         data, addr = self.handler.recvfrom(MAX_SIZE)
